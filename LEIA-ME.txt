@@ -1,0 +1,11 @@
+MATERIAL DE OBRA V7 CLOUD
+
+Inclui o organizador V6 preservado e um painel Firebase inicial.
+
+IMPORTANTE: Antes de usar, confirma as regras Firestore com o conteúdo do ficheiro Firestore_Regras_Material_de_Obra.txt. As regras devem permitir os campos de pedido usados pela app (incluindo language e updatedAt) ou os envios/atualizações podem ser recusados.
+
+A autenticação deve estar ativa em Authentication > Método de login > E-mail/palavra-passe. A conta administradora configurada no HTML é o UID fornecido pelo proprietário.
+
+Como usar: abrir o HTML num ambiente que suporte JavaScript e Firebase SDK por HTTPS; iniciar sessão com a conta admin; criar obras; criar acessos de funcionários (e-mail + palavra-passe); cada funcionário entra no mesmo HTML e envia pedidos. O administrador atualiza os estados.
+
+NOTA TÉCNICA: Este HTML é uma versão web de teste da integração, não uma APK compilada. Testar primeiro com dados fictícios. Para publicação definitiva, ajustar e validar as regras Firestore e empacotar novamente em APK.

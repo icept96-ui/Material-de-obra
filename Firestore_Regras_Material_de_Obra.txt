@@ -1,0 +1,58 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return signedIn() && request.auth.uid == '8Z1bTtwuUvTND4FaVzLi5lbTry42';
+    }
+
+    function workerProfile() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isWorker() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && workerProfile().role == 'worker'
+        && workerProfile().active == true
+        && workerProfile().orgId == 'chantier-obra';
+    }
+
+    function validProject(projectId) {
+      return exists(/databases/$(database)/documents/projects/$(projectId))
+        && get(/databases/$(database)/documents/projects/$(projectId)).data.orgId == 'chantier-obra';
+    }
+
+    match /users/{userId} {
+      allow read: if isAdmin() || (signedIn() && request.auth.uid == userId);
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /projects/{projectId} {
+      allow read: if isAdmin() || isWorker();
+      allow create, update: if isAdmin()
+        && request.resource.data.orgId == 'chantier-obra';
+      allow delete: if isAdmin();
+    }
+
+    match /requests/{requestId} {
+      allow create: if isAdmin() || (isWorker()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.orgId == 'chantier-obra'
+        && request.resource.data.status == 'por_tratar'
+        && request.resource.data.keys().hasOnly(['orgId', 'projectId', 'projectName', 'userId', 'userName', 'material', 'priority', 'status', 'createdAt'])
+        && request.resource.data.material is string
+        && request.resource.data.material.size() > 0
+        && validProject(request.resource.data.projectId));
+      allow read: if isAdmin() || (isWorker() && resource.data.userId == request.auth.uid);
+      allow update, delete: if isAdmin();
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
